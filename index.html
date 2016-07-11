@@ -13,8 +13,11 @@
     <link href="bower_components/ionic/release/css/ionic.min.css" rel="stylesheet">
     <script src="bower_components/ionic/release/js/ionic.bundle.js"></script>
 
-    <!-- <link href="bower_components/ionic-ion-drawer/ionic.contrib.drawer.css" rel="stylesheet">
-    <script src="bower_components/ionic-ion-drawer/ionic.contrib.drawer.js"></script> -->
+    <script src="js/ionic/js/angular/controller/sideMenuController.js"></script>
+    <script src="js/ionic/js/angular/directive/sideMenu.js"></script>
+    <script src="js/ionic/js/angular/directive/sideMenuContent.js"></script>
+    <script src="js/ionic/js/angular/directive/sideMenus.js"></script>
+    <script src="js/ionic/js/views/sideMenuView.js"></script>
 
     <link href="css/style.css" rel="stylesheet">
     <script src="js/script.js"></script>
@@ -23,9 +26,9 @@
 
 <body ng-controller="MainCtrl">
 
-    <ion-side-menus>
+    <ion-side-menus2>
 
-        <ion-side-menu side="left" width="50" class="shadowMenu" pippo>
+        <ion-side-menu2 side="left" width="50" class="shadowMenu" leave-content-active="true">
             <ion-header-bar>
                 <button menu-close class="button button-icon ion-navicon"></button>
             </ion-header-bar>
@@ -41,9 +44,9 @@
                     <ion-item>Savings</ion-item>
                 </ion-list>
             </ion-content>
-        </ion-side-menu>
+        </ion-side-menu2>
 
-        <ion-side-menu-content drag-content="true" menu-close>
+        <ion-side-menu-content2>
             <ion-header-bar>
                 <button menu-toggle class="button button-icon ion-navicon"></button>
             </ion-header-bar>
@@ -58,9 +61,9 @@
                     <ion-item>Savings</ion-item>
                 </ion-list>
             </ion-content>
-        </ion-side-menu-content>
+        </ion-side-menu-content2>
 
-        <ion-side-menu side="right" width="50">
+        <ion-side-menu2 side="right" width="100">
             <ion-header-bar>
                 <button menu-close class="button button-icon ion-navicon"></button>
             </ion-header-bar>
@@ -76,24 +79,8 @@
                     <ion-item>Savings</ion-item>
                 </ion-list>
             </ion-content>
-        </ion-side-menu>
-
-        <!-- <ion-side-menu side="right" width="{{width()}}" can-drag-menu>
-            <ion-header-bar class="bar-balanced">
-                <button menu-close class="button button-icon ion-navicon"></button>
-                <h1 class="title">Credit card</h1>
-            </ion-header-bar>
-            <ion-content class="padding">
-                <p>
-                    On a small viewport (less than 768px window width), the left menu will be hidden, but can be shown by swiping left to right, or toggling the button in the top left of the header. On a large viewport (greater than or equal to 768px), the left menu will
-                    stay open.
-                </p>
-                <p>
-                    Using <code>large</code> as the attribute's value is an alias to <code>(min-width:768px)</code> since it is the most common use-case. However, for added flexibility, any valid media query could be added as the value, such as <code>(min-width:600px)</code>                    or even multiple queries such as <code>(min-width:750px) and (max-width:1200px)</code>.
-                </p>
-            </ion-content>
-        </ion-side-menu> -->
-    </ion-side-menus>
+        </ion-side-menu2>
+    </ion-side-menus2>
 
 </body>
 
