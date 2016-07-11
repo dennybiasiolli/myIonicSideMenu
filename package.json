@@ -1,0 +1,29 @@
+{
+  "name": "myIonicSideMenu",
+  "version": "1.0.0",
+  "description": "myIonicSideMenu",
+  "scripts": {
+    "bower": "bower",
+    "postinstall": "bower install",
+    "start": "lite-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dennybiasiolli/myIonicSideMenu.git"
+  },
+  "keywords": [
+      "ionic",
+      "angular",
+      "sidebar"
+  ],
+  "author": "Denny Biasiolli",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dennybiasiolli/myIonicSideMenu/issues"
+  },
+  "homepage": "https://github.com/dennybiasiolli/myIonicSideMenu#readme",
+  "devDependencies": {
+    "bower": "^1.7.9",
+    "lite-server": "^2.2.2"
+  }
+}
