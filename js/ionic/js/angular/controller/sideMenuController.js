@@ -58,10 +58,18 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
   self.toggleLeft = function(shouldOpen) {
     if (isAsideExposed || !self.left.isEnabled) return;
     var openAmount = self.getOpenAmount();
+    console.log('openAmount', openAmount);
     if (arguments.length === 0) {
       shouldOpen = openAmount <= 0;
     }
+    console.log('shouldOpen', shouldOpen);
     self.content.enableAnimation();
+    if(self.left.type == 'overlay') {
+      self.left.enableAnimation();
+    }
+    if(self.right.type == 'overlay') {
+      self.right.enableAnimation();
+    }
     if (!shouldOpen) {
       self.openPercentage(0);
       $rootScope.$emit('$ionicSideMenuClose', 'left');
@@ -81,6 +89,12 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
       shouldOpen = openAmount >= 0;
     }
     self.content.enableAnimation();
+    if(self.left.type == 'overlay') {
+      self.left.enableAnimation();
+    }
+    if(self.right.type == 'overlay') {
+      self.right.enableAnimation();
+    }
     if (!shouldOpen) {
       self.openPercentage(0);
       $rootScope.$emit('$ionicSideMenuClose', 'right');
@@ -111,7 +125,17 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
    * @return {float} The amount the side menu is open, either positive or negative for left (positive), or right (negative)
    */
   self.getOpenAmount = function() {
-    return self.content && self.content.getTranslateX() || 0;
+    var retOpenAmount = 0;
+    if((isNaN(retOpenAmount) || retOpenAmount === 0) && self.right && self.right.type == 'overlay') {
+      retOpenAmount = self.right.getTranslateX();
+    }
+    if((isNaN(retOpenAmount) || retOpenAmount === 0) && self.left && self.left.type == 'overlay') {
+      retOpenAmount = self.left.getTranslateX();
+    }
+    if((isNaN(retOpenAmount) || retOpenAmount === 0) && self.content) {
+      retOpenAmount = self.content.getTranslateX();
+    }
+    return retOpenAmount;
   };
 
   /**
@@ -145,13 +169,17 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
    * @param {float} percentage The percentage (positive or negative for left/right) to open the menu.
    */
   self.openPercentage = function(percentage) {
+    console.log('openPercentage', percentage);
     var p = percentage / 100;
     var leaveContentActive = false;
 
     if (self.left && percentage >= 0) {
+      console.log('self.openAmount(self.left.width * p)');
       self.openAmount(self.left.width * p);
       leaveContentActive = self.left.leaveContentActive;
-    } else if (self.right && percentage < 0) {
+    }
+    if (self.right && percentage <= 0) {
+        console.log('self.openAmount(self.right.width * p)');
       self.openAmount(self.right.width * p);
       leaveContentActive = self.right.leaveContentActive;
     }
@@ -185,26 +213,50 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
 
     // Check if we can move to that side, depending if the left/right panel is enabled
     if (!(self.left && self.left.isEnabled) && amount > 0) {
-      self.content.setTranslateX(0);
+      if(self.left.type == 'overlay') {
+        self.left.setTranslateX(0);
+      } else {
+        self.content.setTranslateX(0);
+      }
       return;
     }
 
     if (!(self.right && self.right.isEnabled) && amount < 0) {
-      self.content.setTranslateX(0);
+      if(self.right.type == 'overlay') {
+        self.right.setTranslateX(0);
+      } else {
+        self.content.setTranslateX(0);
+      }
       return;
     }
 
     if (leftShowing && amount > maxLeft) {
-      self.content.setTranslateX(maxLeft);
+      if(self.left.type == 'overlay') {
+        self.left.setTranslateX(maxLeft);
+      } else {
+        self.content.setTranslateX(maxLeft);
+      }
       return;
     }
 
     if (rightShowing && amount < -maxRight) {
-      self.content.setTranslateX(-maxRight);
+      if(self.right.type == 'overlay') {
+        self.right.setTranslateX(-maxRight);
+      } else {
+        self.content.setTranslateX(-maxRight);
+      }
       return;
     }
 
-    self.content.setTranslateX(amount);
+    if(leftShowing && self.left.type == 'overlay') {
+      self.left.setTranslateX(amount);
+    }
+    if(rightShowing && self.right.type == 'overlay') {
+      self.right.setTranslateX(amount);
+    }
+    if((leftShowing && self.left.type != 'overlay') || (rightShowing && self.right.type != 'overlay')) {
+      self.content.setTranslateX(amount);
+    }
 
     if (amount >= 0) {
       leftShowing = true;
@@ -212,18 +264,26 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
 
       if (amount > 0) {
         // Push the z-index of the right menu down
-        self.right && self.right.pushDown && self.right.pushDown();
+        if(self.right.type != 'overlay') {
+          self.right && self.right.pushDown && self.right.pushDown();
+        }
         // Bring the z-index of the left menu up
-        self.left && self.left.bringUp && self.left.bringUp();
+        if(self.left.type != 'overlay') {
+          self.left && self.left.bringUp && self.left.bringUp();
+        }
       }
     } else {
       rightShowing = true;
       leftShowing = false;
 
       // Bring the z-index of the right menu up
-      self.right && self.right.bringUp && self.right.bringUp();
+      if(self.right.type != 'overlay') {
+        self.right && self.right.bringUp && self.right.bringUp();
+      }
       // Push the z-index of the left menu down
-      self.left && self.left.pushDown && self.left.pushDown();
+      if(self.left.type != 'overlay') {
+        self.left && self.left.pushDown && self.left.pushDown();
+      }
     }
   };
 
@@ -237,6 +297,12 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
   self.snapToRest = function(e) {
     // We want to animate at the end of this
     self.content.enableAnimation();
+    if(self.left.type == 'overlay') {
+      self.left.enableAnimation();
+    }
+    if(self.right.type == 'overlay') {
+      self.right.enableAnimation();
+    }
     isDragging = false;
 
     // Check how much the panel is open after the drag, and
@@ -355,6 +421,12 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
       isDragging = true;
       // Initialize dragging
       self.content.disableAnimation();
+      if(self.left.type == 'overlay') {
+        self.left.disableAnimation();
+      }
+      if(self.right.type == 'overlay') {
+        self.right.disableAnimation();
+      }
       offsetX = self.getOpenAmount();
     }
 

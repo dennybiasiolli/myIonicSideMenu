@@ -33,8 +33,13 @@ angular.module('ionic')
       angular.isUndefined(attr.isEnabled) && attr.$set('isEnabled', 'true');
       angular.isUndefined(attr.width) && attr.$set('width', '275');
       angular.isUndefined(attr.leaveContentActive) && attr.$set('leaveContentActive', 'false');
+      angular.isUndefined(attr.type) && attr.$set('type', 'push');
 
-      element.addClass('menu menu-' + attr.side);
+      element.addClass('menu menu-' + attr.side + ' menu-animated');
+      if(attr.type == 'overlay') {
+        element[0].style[attr.side] = '-' + attr.width + 'px';
+        element[0].style.zIndex = 2147483647; // top most, maximum zIndex value
+      }
 
       return function($scope, $element, $attr, sideMenuCtrl) {
         $scope.side = $attr.side || 'left';

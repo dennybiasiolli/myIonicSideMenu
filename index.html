@@ -26,11 +26,11 @@
 
 <body ng-controller="MainCtrl">
 
-    <ion-side-menus2>
+    <ion-side-menus2 enable-menu-with-back-views="false">
 
-        <ion-side-menu2 side="left" width="50" class="shadowMenu" leave-content-active="true">
+        <ion-side-menu2 side="left" width="50" leave-content-active="true" type="overlay">
             <ion-header-bar>
-                <button menu-close class="button button-icon ion-navicon"></button>
+                <button class="button button-icon ion-navicon" ng-click="toggleLeft()"></button>
             </ion-header-bar>
             <ion-content>
                 <ion-list>
@@ -46,9 +46,18 @@
             </ion-content>
         </ion-side-menu2>
 
-        <ion-side-menu-content2>
+        <ion-side-menu-content2 close-menu-on-tap="false">
             <ion-header-bar>
-                <button menu-toggle class="button button-icon ion-navicon"></button>
+                <ion-nav-bar>
+                    <ion-nav-buttons side="left">
+                        <!-- Toggle left side menu -->
+                        <button menu-toggle="left" class="button button-icon icon ion-navicon" ng-click="toggleLeft()"></button>
+                    </ion-nav-buttons>
+                    <ion-nav-buttons side="right">
+                        <!-- Toggle right side menu -->
+                        <button menu-toggle="left" class="button button-icon icon ion-navicon" ng-click="toggleRight()"></button>
+                    </ion-nav-buttons>
+                </ion-nav-bar>
             </ion-header-bar>
             <ion-content>
                 <ion-list>
@@ -63,9 +72,9 @@
             </ion-content>
         </ion-side-menu-content2>
 
-        <ion-side-menu2 side="right" width="100">
+        <ion-side-menu2 side="right" width="100" type="overlay">
             <ion-header-bar>
-                <button menu-close class="button button-icon ion-navicon"></button>
+                <button class="button button-icon ion-navicon" ng-click="toggleRight()"></button>
             </ion-header-bar>
             <ion-content>
                 <ion-list>
