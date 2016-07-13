@@ -59,9 +59,15 @@ function($timeout, $ionicGesture, $window) {
           });
         }
 
+        if (angular.isDefined(attr.closeMenuOnTap)) {
+          $scope.$watch(attr.closeMenuOnTap, function(value) {
+            sideMenuCtrl.closeMenuOnTap(value);
+          });
+        }
+
         // Listen for taps on the content to close the menu
         function onContentTap(gestureEvt) {
-          if (sideMenuCtrl.getOpenAmount() !== 0) {
+          if (sideMenuCtrl.closeMenuOnTap() && sideMenuCtrl.getOpenAmount() !== 0) {
             sideMenuCtrl.close();
             gestureEvt.gesture.srcEvent.preventDefault();
             startCoord = null;
