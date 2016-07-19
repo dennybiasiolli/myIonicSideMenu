@@ -11,7 +11,7 @@ angular.module('ionic')
   '$rootScope',
 function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $ionicHistory, $ionicScrollDelegate, IONIC_BACK_PRIORITY, $rootScope) {
   var self = this;
-  var rightShowing, leftShowing, isDragging;
+  var isDragging;
   var startX, lastX, offsetX, isAsideExposed;
   var enableMenuWithBackViews = true;
 
@@ -58,17 +58,13 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
   self.toggleLeft = function(shouldOpen) {
     if (isAsideExposed || !self.left.isEnabled) return;
     var openAmount = self.getOpenAmount();
-    console.log('openAmount', openAmount);
     if (arguments.length === 0) {
       shouldOpen = openAmount <= 0;
     }
-    console.log('shouldOpen', shouldOpen);
-    self.content.enableAnimation();
-    if(self.left.type == 'overlay') {
+    if (self.left.displayType == 'overlay') {
       self.left.enableAnimation();
-    }
-    if(self.right.type == 'overlay') {
-      self.right.enableAnimation();
+    } else {
+      self.content.enableAnimation();
     }
     if (!shouldOpen) {
       self.openPercentage(0);
@@ -88,12 +84,10 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
     if (arguments.length === 0) {
       shouldOpen = openAmount >= 0;
     }
-    self.content.enableAnimation();
-    if(self.left.type == 'overlay') {
-      self.left.enableAnimation();
-    }
-    if(self.right.type == 'overlay') {
+    if (self.right.displayType == 'overlay') {
       self.right.enableAnimation();
+    } else {
+      self.content.enableAnimation();
     }
     if (!shouldOpen) {
       self.openPercentage(0);
@@ -126,13 +120,13 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
    */
   self.getOpenAmount = function() {
     var retOpenAmount = 0;
-    if((isNaN(retOpenAmount) || retOpenAmount === 0) && self.right && self.right.type == 'overlay') {
+    if ((isNaN(retOpenAmount) || retOpenAmount === 0) && self.right && self.right.displayType == 'overlay') {
       retOpenAmount = self.right.getTranslateX();
     }
-    if((isNaN(retOpenAmount) || retOpenAmount === 0) && self.left && self.left.type == 'overlay') {
+    if ((isNaN(retOpenAmount) || retOpenAmount === 0) && self.left && self.left.displayType == 'overlay') {
       retOpenAmount = self.left.getTranslateX();
     }
-    if((isNaN(retOpenAmount) || retOpenAmount === 0) && self.content) {
+    if ((isNaN(retOpenAmount) || retOpenAmount === 0) && self.content) {
       retOpenAmount = self.content.getTranslateX();
     }
     return retOpenAmount;
@@ -169,17 +163,13 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
    * @param {float} percentage The percentage (positive or negative for left/right) to open the menu.
    */
   self.openPercentage = function(percentage) {
-    console.log('openPercentage', percentage);
     var p = percentage / 100;
     var leaveContentActive = false;
 
     if (self.left && percentage >= 0) {
-      console.log('self.openAmount(self.left.width * p)');
       self.openAmount(self.left.width * p);
       leaveContentActive = self.left.leaveContentActive;
-    }
-    if (self.right && percentage <= 0) {
-        console.log('self.openAmount(self.right.width * p)');
+    } else if (self.right && percentage < 0) {
       self.openAmount(self.right.width * p);
       leaveContentActive = self.right.leaveContentActive;
     }
@@ -187,7 +177,8 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
     // add the CSS class "menu-open" if don't want to leave content active and the
     // percentage does not equal 0, otherwise remove the class from the body element
     $ionicBody.enableClass((!leaveContentActive && percentage !== 0), 'menu-open');
-    self.content.setCanScroll(leaveContentActive || percentage === 0);
+
+    self.content.setCanScroll(leaveContentActive || percentage == 0);
   };
 
   /*
@@ -211,79 +202,53 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
     var maxLeft = self.left && self.left.width || 0;
     var maxRight = self.right && self.right.width || 0;
 
+    var overlayLeft = self.left && self.left.displayType == 'overlay' || false;
+    var overlayRight = self.right && self.right.displayType == 'overlay' || false;
+    var openLeft = overlayLeft && self.left.getTranslateX() || 0;
+    var openRight = overlayRight && self.right.getTranslateX() || 0;
+    var openContent = self.content.getTranslateX() || 0;
+
+    if (amount > maxLeft) {
+      amount = maxLeft;
+    } else if (amount < -maxRight) {
+      amount = -maxRight;
+    }
+
     // Check if we can move to that side, depending if the left/right panel is enabled
     if (!(self.left && self.left.isEnabled) && amount > 0) {
-      if(self.left.type == 'overlay') {
-        self.left.setTranslateX(0);
-      } else {
-        self.content.setTranslateX(0);
-      }
+      self.content.setTranslateX(0);
       return;
     }
 
     if (!(self.right && self.right.isEnabled) && amount < 0) {
-      if(self.right.type == 'overlay') {
-        self.right.setTranslateX(0);
-      } else {
-        self.content.setTranslateX(0);
-      }
+      self.content.setTranslateX(0);
       return;
     }
 
-    if (leftShowing && amount > maxLeft) {
-      if(self.left.type == 'overlay') {
-        self.left.setTranslateX(maxLeft);
-      } else {
-        self.content.setTranslateX(maxLeft);
-      }
-      return;
+    if (amount > 0) {
+      if (overlayLeft) { self.left.setTranslateX(amount); }
+      if (overlayRight && openRight) { self.right.setTranslateX(0); }
+      if (!(overlayLeft && openLeft)) { self.content.setTranslateX(overlayLeft ? 0 : amount); }
+    } else if (amount < 0) {
+      if (overlayRight) { self.right.setTranslateX(amount); }
+      if (overlayLeft && openLeft) { self.left.setTranslateX(0); }
+      if (!(overlayRight && openRight)) { self.content.setTranslateX(overlayRight ? 0 : amount); }
+    } else /* if (amount === 0) */ {
+      if (overlayLeft && openLeft) { self.left.setTranslateX(amount); }
+      if (overlayRight && openRight) { self.right.setTranslateX(amount); }
+      if (!(overlayRight && openRight) && openContent) { self.content.setTranslateX(amount); }
     }
 
-    if (rightShowing && amount < -maxRight) {
-      if(self.right.type == 'overlay') {
-        self.right.setTranslateX(-maxRight);
-      } else {
-        self.content.setTranslateX(-maxRight);
-      }
-      return;
-    }
-
-    if(leftShowing && self.left.type == 'overlay') {
-      self.left.setTranslateX(amount);
-    }
-    if(rightShowing && self.right.type == 'overlay') {
-      self.right.setTranslateX(amount);
-    }
-    if((leftShowing && self.left.type != 'overlay') || (rightShowing && self.right.type != 'overlay')) {
-      self.content.setTranslateX(amount);
-    }
-
-    if (amount >= 0) {
-      leftShowing = true;
-      rightShowing = false;
-
-      if (amount > 0) {
-        // Push the z-index of the right menu down
-        if(self.right.type != 'overlay') {
-          self.right && self.right.pushDown && self.right.pushDown();
-        }
-        // Bring the z-index of the left menu up
-        if(self.left.type != 'overlay') {
-          self.left && self.left.bringUp && self.left.bringUp();
-        }
-      }
+    if (amount > 0) {
+      // Push the z-index of the right menu down
+      self.right && self.right.displayType != 'overlay' && self.right.pushDown && self.right.pushDown();
+      // Bring the z-index of the left menu up
+      self.left && self.left.displayType != 'overlay' && self.left.bringUp && self.left.bringUp();
     } else {
-      rightShowing = true;
-      leftShowing = false;
-
       // Bring the z-index of the right menu up
-      if(self.right.type != 'overlay') {
-        self.right && self.right.bringUp && self.right.bringUp();
-      }
+      self.right && self.right.displayType != 'overlay' && self.right.bringUp && self.right.bringUp();
       // Push the z-index of the left menu down
-      if(self.left.type != 'overlay') {
-        self.left && self.left.pushDown && self.left.pushDown();
-      }
+      self.left && self.left.displayType != 'overlay' && self.left.pushDown && self.left.pushDown();
     }
   };
 
@@ -297,12 +262,6 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
   self.snapToRest = function(e) {
     // We want to animate at the end of this
     self.content.enableAnimation();
-    if(self.left.type == 'overlay') {
-      self.left.enableAnimation();
-    }
-    if(self.right.type == 'overlay') {
-      self.right.enableAnimation();
-    }
     isDragging = false;
 
     // Check how much the panel is open after the drag, and
@@ -421,10 +380,10 @@ function($scope, $attrs, $ionicSideMenuDelegate, $ionicPlatform, $ionicBody, $io
       isDragging = true;
       // Initialize dragging
       self.content.disableAnimation();
-      if(self.left.type == 'overlay') {
+      if (self.left.displayType == 'overlay') {
         self.left.disableAnimation();
       }
-      if(self.right.type == 'overlay') {
+      if (self.right.displayType == 'overlay') {
         self.right.disableAnimation();
       }
       offsetX = self.getOpenAmount();
